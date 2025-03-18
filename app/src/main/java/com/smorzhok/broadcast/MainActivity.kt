@@ -13,10 +13,15 @@ import android.widget.Button
 import android.widget.ProgressBar
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.smorzhok.broadcast.MyReceiver.Companion.ACTION_CLICKED
 
 class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
+
+    private val lbManager by lazy {
+        LocalBroadcastManager.getInstance(this)
+    }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -37,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button).setOnClickListener {
             Intent(ACTION_CLICKED).apply {
                 putExtra(MyReceiver.EXTRA_COUNT, count++)
-                sendBroadcast(this)
+                lbManager.sendBroadcast(this)
             }
         }
         val intentFilter = IntentFilter().apply {
@@ -46,7 +51,7 @@ class MainActivity : AppCompatActivity() {
             addAction(ACTION_AIRPLANE_MODE_CHANGED)
             addAction("loaded")
         }
-        registerReceiver(receiver, intentFilter, RECEIVER_EXPORTED)
+        lbManager.registerReceiver(receiver, intentFilter)
         Intent(this, MyService::class.java).apply {
             startService(this)
         }
@@ -54,6 +59,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(receiver)
+        lbManager.unregisterReceiver(receiver)
     }
 }
